@@ -1,0 +1,81 @@
+@author Dumitrescu Alexandra
+@since April 2022
+@for 323CA ACS UPB
+________
+Router
+________
+
+@   Table of contents:
+        1. Tasks implemented
+        2. Work Flow
+        3. Details in implementation
+        4. Credits
+
+@   Task implemented
+
+    I implemented de following tasks:
+        1. ARP protocol
+        2. IPv4 protocol
+        3. Forwarding algorithm using LPM (Longest Prefix Match)
+        4. ICMP protocol
+        5. RFC 1624 checksum computing algorithm
+
+
+@ Work Flow
+
+        The router receives a packet via phisical layer.
+        With the specific packet, the router obtains the ether header
+    and depending on its type implements two cases.
+
+        If the Ether Type is IPv4, the router follows the steps:
+|  A) Checks if there is an ICMP request with itself
+|  B) Checks header's checksum and throws an ICMP error packet in
+|     case of a wrong checksum
+|  C) Checks header's TTL and throws an ICMP error packet in
+|     case of an expired packet
+|  D) Computes next hop using the routing table
+|  E) When received the IP adress of next hop, searches in
+|     the cache table for the corresponding mac adress
+|  F) If not found, computes an ARP request with the given target
+|     and temporarly stores packet in a queue
+|  G) Updates TTL and computes new checksum
+|  H) Updates Level2 headers and interface and sends packet
+
+        If the Ether type is ARP, the router follows the steps:
+|   A) Check if there is an ARP request for itself and sends
+|      an ARP reply in affirmative case
+|   B) Checks if there is an ARP request, then stores the new
+|      data in the cache table and sends all corresponding
+|      packets from the queue  
+
+
+@ Details in implementation
+    
+    A) For the cache table we used a resizable array
+    B) We computed the binary search when searching for an entry in the route
+    table
+    C) For each sending-packet flow the idea was:
+
+    ** packet payload geneal form:
+    ____________________________________________________
+    |               |                   |               |
+    | Ether Header  |   IPv4/ ARP Hader |   ICMP (opt)  |
+    ____________________________________________________
+
+    Compute each new header with the corresponding fields
+    and copy their references in a new packet payload
+
+    ** packet size:
+    
+    Sum of sizes of all headers in paylod
+
+    ** packet interface:
+    
+    Received packet's interface / Next Hop interface
+    
+@ Credits
+    
+    I give the following credits for inspiration:
+        1. https://ocw.cs.pub.ro/courses/pc/laboratoare/04
+        2. https://datatracker.ietf.org/doc/rfc1624/
+        3. initial github repository of the homework (1st week)
